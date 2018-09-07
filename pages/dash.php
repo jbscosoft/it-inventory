@@ -71,7 +71,6 @@ ob_start();
               <img src="../dist/img/user-avatar.png" class="user-image" alt="User Image">
               <span class="hidden-xs">
               <?php  
-               
                   if(login_check($mysqli) == true){
                   $fname = getfield('fname',$mysqli);
                   $sname = getfield('sname',$mysqli);

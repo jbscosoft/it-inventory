@@ -1362,6 +1362,10 @@ function updateItem($id){
           <!-- Horizontal Form -->
           <?php
             if (isset($_POST['updateItem'])){
+             error_reporting(false);
+
+              $item_id = $_POST['item_id'];
+              $item_id = $_POST['item_id'];
               $cat = $_POST['cat'];
               $Manufacturer = $_POST['Manufacturer'];
               $Model = $_POST['Model'];
@@ -1378,16 +1382,20 @@ function updateItem($id){
               $os = $_POST['os'];
               $remarks = $_POST['remarks'];
               $updatedOn = date('Y/m/d H:i:s');
+              $UserID = $_POST['user'];
+              $item_name = $_POST['item_name'];
               $addedBy = getfield('fname',$mysqli);
               include 'real-config.php';
               include 'focus.php';
-              $query_item= "UPDATE `item` SET `manufacturer` = 'kk', `model` = '".$Model."', `tag` = '".$Tag."', `serial_no` = '".$serial_no."', `part_number` = '".$partNumber."', `mac_address` = '".$MACAddress."', `ram` = '".$RAMCapacity."', `hd` = '".$HardDiskCapacity."', `processor` = '".$Processor."', `os` = '".$os."', `ipaddress` = '".$IPAddress."', `supplier` = '".$Supplier."', `status` = '".$status."', `Assigned` = 'Yes', `addedBy` = '".$addedBy."', `remarks` = '".$remarks."', `updated_on` = '".$updatedOn."' WHERE `item`.`id` = '".$id."'";
-              $query_run_item= mysqli_query($mysqli, $query_item);
+              echo  'jjjjjjjj'.$item_id."".$SerialNo;
+              $query_item = "UPDATE `item` SET `manufacturer` = 'kkg', `model` = '".$Model."', `tag` = '".$Tag."', `serial_no` = '$SerialNo', `part_number` = '".$partNumber."', `mac_address` = '".$MACAddress."', `ram` = '".$RAMCapacity."', `hd` = '".$HardDiskCapacity."', `processor` = '".$Processor."', `os` = '".$os."', `ipaddress` = '".$IPAddress."', `supplier` = '".$Supplier."', `status` = '".$status."', `Assigned` = 'Yes', `addedBy` = '".$addedBy."', `remarks` = '".$remarks."', `updated_on` = '".$updatedOn."',  `computer_user_id` = '".$UserID."' WHERE `item`.`id` = '".$item_id."'";
+              send_email($item_name,$SerialNo,$from,$to);
+              $query_run_item = mysqli_query($mysqli, $query_item);
               if($query_run_item){
                 msg_success('Operatioln Successful','Item Updated');
               }else{
                 msg_error('Operation Failed','Update Failed. Please check your network connection and try again');
-                echo $mysqli->error;
+               // echo $mysqli->error;
               } 
             }
           ?>
@@ -1403,6 +1411,7 @@ function updateItem($id){
                 <div class="form-group">
                   <div class="form-group">
                   <label for="exampleInputEmail1">Select Category</label>
+                  <input type ="hidden" value ="<?php echo $row['id'] ?>" name ="item_id"> 
                 <select name="cat" class="form-control"  required="required" >
                 <option value="<?php echo $row['item_name'] ?>"><?php echo $row['item_name'] ?></option>
                   <option value="System Unit">System Unit</option>
@@ -1415,16 +1424,32 @@ function updateItem($id){
                 </div>
                 <div class="form-group">
                   <label for="exampleInputEmail1">Users</label>
+
+                  <select name="user" class="form-control" required>
+                 
+                 <?php
+                 $user_id = $row['computer_user_id'];
+                 $query1 = "SELECT * FROM  computer_user WHERE id = $user_id";
+                 include 'real-config.php';
+                 if($query_run1 = mysqli_query($mysqli, $query1)){
+                   echo "yes";
+                 }else{
+                   echo "no".mysqli_error($mysqli);
+                 }
+                 $row_user1=mysqli_fetch_array($query_run1);
+                 ?>
+
+                <option value='<?php echo strtoupper($row_user1['fname'])." ".$row_user1['sname'] ?>' selected><?php echo strtoupper($row_user1['fname'])." ".$row_user1['sname'] ?></option>
                   <?php
+                  ///get all users
                   $query = "SELECT * FROM  computer_user ORDER BY fname ASC";
                   include 'real-config.php';
                   $query_run = mysqli_query($mysqli, $query);
                   if (!$query_run) {
                       echo "Query_Run_Error" . mysqli_error($mysqli);
                   } else {
-                    echo '<select name="user" class="form-control select2 select2-hidden-accessible" style="width: 100%;" tabindex="-1" aria-hidden="true" required>
-                    ';
-                    echo "<option value=''>--Select--</option>";
+                    
+                
                   while($row_user=mysqli_fetch_array($query_run))
                       {
                           echo '<option value="' . htmlspecialchars($row_user['id']) . '">' 
@@ -1434,6 +1459,10 @@ function updateItem($id){
                     }
                     echo '</select>'
                       ?>
+                      <input type = "hidden" value ='<?php echo strtoupper($row_user1['fname'])." ".$row_user1['sname'] ?>' name = "userFrom">
+                      <input type = "hidden" value ='<?php echo strtoupper($row_user['fname'])." ".$row_user['sname'] ?>' name = "userTo">
+                      <input type = "hidden" value ='<?php echo $row['item_name'] ?>' name = "item_name">
+
               </div>
                 <div class="form-group">
                   <label for="exampleInputPassword1">Manufacturer</label>
@@ -1459,7 +1488,7 @@ function updateItem($id){
                 <div class="form-group">
                   <label for="exampleInputPassword1">Status</label>
                   <select class="form-control" name="status" required>
-                <option value="">--Select--</option>
+                <option value="<?php echo $row['status'] ?>" selected><?php echo $row['status'] ?></option>
                 <option value="Working">Working - Assigned</option>
                 <option value="Working">Working - Store</option>
                 <option value="Faulty">Faulty - Store</option>
@@ -1509,12 +1538,12 @@ function updateItem($id){
             </div>
               </div>
               </div>
-            </div>
-              <!-- /.box-body -->
               <div class="box-footer">
                 <button type="submit" class="btn btn-success" name = "updateItem">Update</button>
-
               </div>
+            </div>
+              <!-- /.box-body -->
+              
             </form>
           </div>
   
